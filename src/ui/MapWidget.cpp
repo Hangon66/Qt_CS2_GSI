@@ -1,6 +1,7 @@
 #include "MapWidget.h"
 #include "ui_MapWidget.h"
 #include "gsi/GsiService.h"
+#include "utils/SoundPlayer.h"
 
 // 地图阶段中文名
 static QString mapPhaseName(GSI::MapPhase phase) {
@@ -131,6 +132,8 @@ void MapWidget::onEstimatedTick() {
         style = QStringLiteral("color: red; font-size: 16px; font-weight: bold;");
         if (m_estimatedSeconds <= 10)
             style = QStringLiteral("color: red; font-size: 18px; font-weight: bold;");
+        if (m_estimatedSeconds == 1)
+            SoundPlayer::playBombImminent();
         break;
     default:
         break;
@@ -171,6 +174,7 @@ void MapWidget::connectToService(GSI::GsiService *service) {
         switch (curr) {
         case GSI::RoundPhase::Freezetime:
             startEstimatedCountdown(EstimateType::Freezetime, 15);
+            SoundPlayer::playRespawn();
             break;
         case GSI::RoundPhase::Live:
             startEstimatedCountdown(EstimateType::Round, 115);

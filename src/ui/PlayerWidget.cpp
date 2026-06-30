@@ -2,6 +2,7 @@
 #include "ui_PlayerWidget.h"
 #include "gsi/GsiService.h"
 #include "gsi/LocalPlayerService.h"
+#include "utils/SoundPlayer.h"
 
 PlayerWidget::PlayerWidget(QWidget *parent)
     : QWidget(parent)
@@ -123,6 +124,7 @@ void PlayerWidget::connectToService(GSI::GsiService *service) {
         ui->statusLabel->setText(QStringLiteral("状态: 死亡"));
         ui->statusLabel->setStyleSheet(QStringLiteral("color: red; font-weight: bold; font-size: 16px;"));
         ui->hpLabel->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: gray;"));
+        SoundPlayer::playDeath();
     });
 
     connect(lp, &GSI::LocalPlayerService::respawned, this, [this]() {

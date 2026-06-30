@@ -59,6 +59,9 @@ set(GSI_SOURCES
     ui/EventLogWidget.h
     ui/EventLogWidget.cpp
     ui/EventLogWidget.ui
+
+    utils/SoundPlayer.h
+    utils/SoundPlayer.cpp
 )
 
 qt_add_executable(QtGSI
@@ -85,6 +88,14 @@ target_link_libraries(QtGSI
         Qt::Widgets
         Qt::Network
         Qt::WebSockets
+        Qt::Multimedia
+)
+
+# 拷贝 resources 目录到构建输出目录（与 QtGSI.exe 同级）
+add_custom_command(TARGET QtGSI POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        $<TARGET_FILE_DIR:QtGSI>/resources
 )
 
 install(TARGETS QtGSI
