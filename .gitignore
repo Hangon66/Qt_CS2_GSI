@@ -24,6 +24,7 @@ qrc_*.cpp
 .vscode/
 .idea/
 *.swp
+.qoder
 *~
 
 # OS
@@ -31,7 +32,6 @@ Thumbs.db
 .DS_Store
 
 # docs
-docs/
+docs/cs2-gsi-z-main
 
 # other
-.qoder
