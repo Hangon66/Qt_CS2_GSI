@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EventLogWidget</class>
+ <widget class="QWidget" name="EventLogWidget">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>600</width><height>300</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titleLabel">
+     <property name="text"><string>事件日志</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="logTextEdit">
+     <property name="readOnly"><bool>true</bool></property>
+     <property name="font">
+      <font><family>Consolas</family><pointsize>9</pointsize></font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="clearButton">
+     <property name="text"><string>清空日志</string></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

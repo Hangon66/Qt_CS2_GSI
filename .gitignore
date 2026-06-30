@@ -1,0 +1,37 @@
+# Build
+build/
+cmake-build-*/
+
+# Qt Creator
+.qtcreator/
+
+# Compiled
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Object files
+*.o
+*.obj
+
+# Auto-generated
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# docs
+docs/
+
+# other
+.qoder

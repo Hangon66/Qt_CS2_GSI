@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlayerWidget</class>
+ <widget class="QWidget" name="PlayerWidget">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>600</width><height>150</height></rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="nameLabel">
+     <property name="text"><string>玩家: --</string></property>
+     <property name="styleSheet"><string>font-weight: bold; font-size: 14px;</string></property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="teamLabel">
+     <property name="text"><string>队伍: --</string></property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="hpLabel">
+     <property name="text"><string>HP: --</string></property>
+     <property name="styleSheet"><string>font-size: 16px; font-weight: bold;</string></property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLabel" name="armorLabel">
+     <property name="text"><string>护甲: --</string></property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLabel" name="moneyLabel">
+     <property name="text"><string>金钱: --</string></property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="weaponLabel">
+     <property name="text"><string>武器: --</string></property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="ammoLabel">
+     <property name="text"><string>弹药: --</string></property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLabel" name="kdaLabel">
+     <property name="text"><string>KDA: --</string></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

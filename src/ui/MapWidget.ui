@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MapWidget</class>
+ <widget class="QWidget" name="MapWidget">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>600</width><height>120</height></rect>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QLabel" name="mapNameLabel">
+     <property name="text"><string>地图: --</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="phaseLabel">
+     <property name="text"><string>阶段: --</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="roundLabel">
+     <property name="text"><string>回合: --</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="ctScoreLabel">
+     <property name="text"><string>CT: 0</string></property>
+     <property name="styleSheet"><string>color: blue; font-weight: bold; font-size: 18px;</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="vsLabel">
+     <property name="text"><string>vs</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="tScoreLabel">
+     <property name="text"><string>T: 0</string></property>
+     <property name="styleSheet"><string>color: red; font-weight: bold; font-size: 18px;</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="countdownLabel">
+     <property name="text"><string>倒计时: --</string></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
