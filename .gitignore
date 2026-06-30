@@ -19,6 +19,7 @@ cmake-build-*/
 moc_*.cpp
 ui_*.h
 qrc_*.cpp
+CMakeLists.txt.user
 
 # IDE
 .vscode/
@@ -35,3 +36,4 @@ Thumbs.db
 docs/cs2-gsi-z-main
 
 # other
+

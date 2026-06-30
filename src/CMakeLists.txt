@@ -19,6 +19,8 @@ set(GSI_SOURCES
 
     gsi/utils/JsonUtils.h
     gsi/utils/JsonUtils.cpp
+    gsi/utils/FileLogger.h
+    gsi/utils/FileLogger.cpp
     gsi/network/GsiListener.h
     gsi/network/GsiListener.cpp
     gsi/network/GsiServer.h

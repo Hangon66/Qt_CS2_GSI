@@ -1,5 +1,6 @@
 #include "src/ui/MainWindow.h"
 #include "src/gsi/GsiService.h"
+#include "src/gsi/utils/FileLogger.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -7,6 +8,10 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    // 初始化文件日志系统
+    GSI::FileLogger::init();
+    qDebug() << "FileLogger: Log file ->" << GSI::FileLogger::logFilePath();
 
     // 创建 GSI 服务
     GSI::GsiService gsiService;

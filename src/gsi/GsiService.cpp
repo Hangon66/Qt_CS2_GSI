@@ -111,56 +111,156 @@ const GameState &GsiService::lastState() const {
 
 static const QString CFG_FILENAME = QStringLiteral("gamestate_integration_QtGSI.cfg");
 
-QStringList GsiService::findCs2CfgDirs() {
-    QStringList result;
+/// CS2 的 Steam App ID
+static constexpr int CS2_APP_ID = 730;
 
-    // 从注册表读取 Steam 安装路径
-    QSettings reg(QStringLiteral("HKEY_CURRENT_USER\\Software\\Valve\\Steam"),
-                  QSettings::NativeFormat);
-    QString steamPath = reg.value(QStringLiteral("SteamPath")).toString();
-    if (steamPath.isEmpty()) {
-        // 备用：常见默认路径
-        steamPath = QStringLiteral("C:/Program Files (x86)/Steam");
+/// 从 Steam 注册表读取 Steam 安装路径（依次尝试 HKCU 和 HKLM）
+static QString resolveSteamPath() {
+    // 1. HKEY_CURRENT_USER（Steam 运行时写入）
+    QSettings regCU(QStringLiteral("HKEY_CURRENT_USER\\Software\\Valve\\Steam"),
+                    QSettings::NativeFormat);
+    QString path = regCU.value(QStringLiteral("SteamPath")).toString();
+    if (!path.isEmpty()) {
+        path.replace('\\', '/');
+        return path;
     }
-    // 统一分隔符
-    steamPath.replace('\\', '/');
 
-    // CS2 在 Steam 中的可能位置
-    QStringList relativePaths = {
-        QStringLiteral("/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg"),
-        QStringLiteral("/SteamApps/common/Counter-Strike Global Offensive/game/csgo/cfg"),
-    };
+    // 2. HKEY_LOCAL_MACHINE（Steam 安装时写入，参考 SteamAppPathProvider）
+    QSettings regLM(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Valve\\Steam"),
+                    QSettings::NativeFormat);
+    path = regLM.value(QStringLiteral("InstallPath")).toString();
+    if (!path.isEmpty()) {
+        path.replace('\\', '/');
+        return path;
+    }
 
-    for (const QString &rel : relativePaths) {
-        QString full = steamPath + rel;
-        if (QDir(full).exists()) {
-            result.append(full);
+    // 3. 常见默认路径
+    QString defaultPath = QStringLiteral("C:/Program Files (x86)/Steam");
+    if (QDir(defaultPath).exists()) {
+        return defaultPath;
+    }
+
+    return {};
+}
+
+/// 从 libraryfolders.vdf 中解析所有 Steam 库路径
+static QStringList resolveSteamLibraries(const QString &steamPath) {
+    QStringList libraries;
+
+    // 始终包含默认 steamapps 目录
+    QString defaultApps = steamPath + QStringLiteral("/steamapps");
+    if (QDir(defaultApps).exists()) {
+        libraries.append(defaultApps);
+    }
+
+    QString vdfPath = steamPath + QStringLiteral("/steamapps/libraryfolders.vdf");
+    if (!QFile::exists(vdfPath)) {
+        return libraries;
+    }
+
+    QFile vdf(vdfPath);
+    if (!vdf.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return libraries;
+    }
+
+    // 简单解析：提取 "path" 字段值
+    while (!vdf.atEnd()) {
+        QString line = QString::fromUtf8(vdf.readLine()).trimmed();
+        if (line.startsWith(QStringLiteral("\"path\""))) {
+            QStringList parts = line.split(QStringLiteral("\""), Qt::SkipEmptyParts);
+            // parts[0]="path", parts[1]=tabs, parts[2]=实际路径值
+            if (parts.size() >= 3) {
+                QString libPath = parts.last();  // 取最后一个非空部分作为路径
+                libPath.replace("\\\\", "/");
+                libPath.replace('\\', '/');
+                QString steamApps = libPath + QStringLiteral("/steamapps");
+                if (QDir(steamApps).exists() && !libraries.contains(steamApps)) {
+                    libraries.append(steamApps);
+                }
+            }
         }
     }
 
-    // 扫描 Steam LibraryFolders (libraryfolders.vdf)
-    QString vdfPath = steamPath + QStringLiteral("/steamapps/libraryfolders.vdf");
-    if (QFile::exists(vdfPath)) {
-        QFile vdf(vdfPath);
-        if (vdf.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            // 简单解析：提取 "path" 字段
-            while (!vdf.atEnd()) {
-                QString line = QString::fromUtf8(vdf.readLine()).trimmed();
-                if (line.startsWith(QStringLiteral("\"path\""))) {
-                    // "path"  "D:\\Games\\Steam"
-                    QStringList parts = line.split(QStringLiteral("\""), Qt::SkipEmptyParts);
-                    if (parts.size() >= 4) {
-                        QString libPath = parts[3];
-                        libPath.replace("\\\\", "/");
-                        libPath.replace('\\', '/');
-                        for (const QString &rel : relativePaths) {
-                            QString full = libPath + rel;
-                            if (QDir(full).exists() && !result.contains(full)) {
-                                result.append(full);
-                            }
-                        }
-                    }
-                }
+    return libraries;
+}
+
+/// 解析 appmanifest_<appId>.acf 获取游戏的 installdir
+/// @return 游戏安装目录的完整路径（如 .../steamapps/common/Counter-Strike Global Offensive），空表示未找到
+static QString resolveGameInstallDir(const QString &steamAppsPath, int appId) {
+    QString acfPath = steamAppsPath + QStringLiteral("/appmanifest_%1.acf").arg(appId);
+    if (!QFile::exists(acfPath)) {
+        return {};
+    }
+
+    QFile acf(acfPath);
+    if (!acf.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return {};
+    }
+
+    // 在 ACF 中查找 "installdir" 字段
+    QString installDir;
+    while (!acf.atEnd()) {
+        QString line = QString::fromUtf8(acf.readLine()).trimmed();
+        if (line.startsWith(QStringLiteral("\"installdir\""))) {
+            QStringList parts = line.split(QStringLiteral("\""), Qt::SkipEmptyParts);
+            // parts[0]="installdir", parts[1]=tabs, parts[2]=实际路径值
+            if (parts.size() >= 3) {
+                installDir = parts.last();  // 取最后一个非空部分
+                break;
+            }
+        }
+    }
+
+    if (installDir.isEmpty()) {
+        return {};
+    }
+
+    QString fullPath = steamAppsPath + QStringLiteral("/common/") + installDir;
+    if (QDir(fullPath).exists()) {
+        return fullPath;
+    }
+
+    return {};
+}
+
+QStringList GsiService::findCs2CfgDirs() {
+    QStringList result;
+
+    // 1. 解析 Steam 安装路径
+    QString steamPath = resolveSteamPath();
+    if (steamPath.isEmpty()) {
+        qWarning() << "GsiService: Steam installation not found in registry.";
+        return result;
+    }
+    qDebug() << "GsiService: Steam path:" << steamPath;
+
+    // 2. 获取所有 Steam 库
+    QStringList libraries = resolveSteamLibraries(steamPath);
+    qDebug() << "GsiService: Found" << libraries.size() << "Steam libraries.";
+
+    // 3. 在每个库中通过 appmanifest_730.acf 精确定位 CS2
+    for (const QString &lib : libraries) {
+        QString gameDir = resolveGameInstallDir(lib, CS2_APP_ID);
+        if (!gameDir.isEmpty()) {
+            // CS2 cfg 目录: <gameDir>/game/csgo/cfg
+            QString cfgDir = gameDir + QStringLiteral("/game/csgo/cfg");
+            if (QDir(cfgDir).exists() && !result.contains(cfgDir)) {
+                result.append(cfgDir);
+                qDebug() << "GsiService: Found CS2 cfg dir via ACF:" << cfgDir;
+            }
+        }
+    }
+
+    // 4. 兜底：如果 ACF 方式未找到，尝试常见硬编码路径
+    if (result.isEmpty()) {
+        QStringList fallbackPaths = {
+            steamPath + QStringLiteral("/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg"),
+            steamPath + QStringLiteral("/SteamApps/common/Counter-Strike Global Offensive/game/csgo/cfg"),
+        };
+        for (const QString &fallback : fallbackPaths) {
+            if (QDir(fallback).exists() && !result.contains(fallback)) {
+                result.append(fallback);
+                qDebug() << "GsiService: Found CS2 cfg dir via fallback:" << fallback;
             }
         }
     }
