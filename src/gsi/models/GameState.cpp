@@ -3,7 +3,8 @@
 namespace GSI {
 
 GameState::GameState(const QJsonObject &obj)
-    : provider(obj.value("provider").toObject())
+    : auth(obj.value("auth").toObject())
+    , provider(obj.value("provider").toObject())
     , map(obj.value("map").toObject())
     , round(obj.value("round").toObject())
     , player(obj.value("player").toObject())
@@ -16,6 +17,7 @@ GameState::GameState(const QJsonObject &obj)
 
 QJsonObject GameState::toJsonObject() const {
     QJsonObject o;
+    o["auth"] = auth.toJsonObject();
     o["provider"] = provider.toJsonObject();
     o["map"] = map.toJsonObject();
     o["round"] = round.toJsonObject();

@@ -44,6 +44,8 @@ set(GSI_SOURCES
     gsi/GsiUpdateHandler.cpp
     gsi/GsiService.h
     gsi/GsiService.cpp
+    gsi/LocalPlayerService.h
+    gsi/LocalPlayerService.cpp
 
     ui/MainWindow.h
     ui/MainWindow.cpp

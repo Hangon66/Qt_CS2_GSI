@@ -14,6 +14,10 @@ namespace GSI {
  * @brief 完整游戏状态，聚合所有子模型
  */
 struct GameState {
+    /**
+     * @brief GSI 认证信息（auth 字段）。
+     */
+    Auth auth;
     Provider provider;
     MapModel map;
     Round round;

@@ -2,6 +2,25 @@
 
 namespace GSI {
 
+// --- Auth ---
+Auth::Auth(const QJsonObject &obj)
+    : token(obj.value("token").toString())
+    , ip(obj.value("ip").toString())
+{}
+
+QJsonObject Auth::toJsonObject() const {
+    QJsonObject o;
+    if (!token.isEmpty())
+        o["token"] = token;
+    if (!ip.isEmpty())
+        o["ip"] = ip;
+    return o;
+}
+
+bool Auth::operator==(const Auth &other) const {
+    return token == other.token && ip == other.ip;
+}
+
 // --- Provider ---
 Provider::Provider(const QJsonObject &obj)
     : name(obj.value("name").toString())

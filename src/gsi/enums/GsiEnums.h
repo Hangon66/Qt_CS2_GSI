@@ -312,7 +312,9 @@ enum class CountdownPhase {
     Over,
     Freezetime,
     Bomb,
-    Defusing
+    Defusing,
+    Paused,
+    Timeout
 };
 
 inline CountdownPhase stringToCountdownPhase(const QString &str) {
@@ -322,6 +324,8 @@ inline CountdownPhase stringToCountdownPhase(const QString &str) {
     if (str == "freezetime") return CountdownPhase::Freezetime;
     if (str == "bomb") return CountdownPhase::Bomb;
     if (str == "defuse") return CountdownPhase::Defusing;
+    if (str == "paused") return CountdownPhase::Paused;
+    if (str == "timeout") return CountdownPhase::Timeout;
     return CountdownPhase::Unknown;
 }
 
@@ -333,6 +337,8 @@ inline QString countdownPhaseToString(CountdownPhase phase) {
         case CountdownPhase::Freezetime: return QStringLiteral("freezetime");
         case CountdownPhase::Bomb: return QStringLiteral("bomb");
         case CountdownPhase::Defusing: return QStringLiteral("defuse");
+        case CountdownPhase::Paused: return QStringLiteral("paused");
+        case CountdownPhase::Timeout: return QStringLiteral("timeout");
         default: return QStringLiteral("unknown");
     }
 }

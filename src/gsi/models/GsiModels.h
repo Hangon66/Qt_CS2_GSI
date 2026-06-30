@@ -9,6 +9,26 @@
 namespace GSI {
 
 /**
+ * @brief GSI 认证信息（auth 字段）
+ */
+struct Auth {
+    /**
+     * @brief 认证令牌。
+     */
+    QString token;
+    /**
+     * @brief 认证 IP 地址。
+     */
+    QString ip;
+
+    Auth() = default;
+    explicit Auth(const QJsonObject &obj);
+    QJsonObject toJsonObject() const;
+    bool operator==(const Auth &other) const;
+    bool operator!=(const Auth &other) const { return !(*this == other); }
+};
+
+/**
  * @brief GSI 提供者信息（游戏客户端）
  */
 struct Provider {

@@ -36,6 +36,22 @@ void PlayerStateDiffer::diff(const GameState &prev, const GameState &curr, GsiSe
     if (ps.equipmentValue != cs.equipmentValue) emit e->playerEquipmentValueChanged(ps.equipmentValue, cs.equipmentValue);
     if (ps.roundKills != cs.roundKills)     emit e->playerRoundKillsChanged(ps.roundKills, cs.roundKills);
 
+    // 新增字段 diff
+    if (ps.roundHeadshotKills != cs.roundHeadshotKills)
+        emit e->playerRoundHeadshotKillsChanged(ps.roundHeadshotKills, cs.roundHeadshotKills);
+    if (ps.roundTotalDamage != cs.roundTotalDamage)
+        emit e->playerRoundTotalDamageChanged(ps.roundTotalDamage, cs.roundTotalDamage);
+    if (ps.defusekit != cs.defusekit)
+        emit e->playerDefusekitChanged(ps.defusekit, cs.defusekit);
+
+    // 语义推理
+    if (ps.health > cs.health && cs.health >= 0)
+        emit e->playerTookDamage(ps.health - cs.health);
+    if (ps.health > 0 && cs.health == 0)
+        emit e->playerDied();
+    if (ps.health == 0 && cs.health > 0)
+        emit e->playerRespawned();
+
     // allPlayers 状态
     const auto &prevIds = prev.allPlayers.list;
     const auto &currIds = curr.allPlayers.list;
@@ -59,6 +75,16 @@ void PlayerStateDiffer::diff(const GameState &prev, const GameState &curr, GsiSe
             if (pState.flashed != cState.flashed)  emit e->allPlayersFlashedChanged(sid, pState.flashed, cState.flashed);
             if (pState.smoked != cState.smoked)    emit e->allPlayersSmokedChanged(sid, pState.smoked, cState.smoked);
             if (pState.burning != cState.burning)  emit e->allPlayersBurningChanged(sid, pState.burning, cState.burning);
+
+            // 新增 allPlayers 字段 diff
+            if (pState.roundKills != cState.roundKills)
+                emit e->allPlayersRoundKillsChanged(sid, pState.roundKills, cState.roundKills);
+            if (pState.roundHeadshotKills != cState.roundHeadshotKills)
+                emit e->allPlayersRoundHeadshotKillsChanged(sid, pState.roundHeadshotKills, cState.roundHeadshotKills);
+            if (pState.equipmentValue != cState.equipmentValue)
+                emit e->allPlayersEquipmentValueChanged(sid, pState.equipmentValue, cState.equipmentValue);
+            if (pState.defusekit != cState.defusekit)
+                emit e->allPlayersDefusekitChanged(sid, pState.defusekit, cState.defusekit);
         }
     }
 
@@ -81,6 +107,12 @@ void PlayerMatchStatsDiffer::diff(const GameState &prev, const GameState &curr, 
     if (pm.score != cm.score)   emit e->playerScoreChanged(pm.score, cm.score);
     if (pm.mvps != cm.mvps)     emit e->playerMvpsChanged(pm.mvps, cm.mvps);
 
+    // 语义推理：击杀
+    if (cm.kills > pm.kills) {
+        const Weapon *active = curr.player.weapons.getActive();
+        emit e->playerGotKill(active ? active->name : QString());
+    }
+
     // allPlayers 统计
     const auto &prevIds = prev.allPlayers.list;
     const auto &currIds = curr.allPlayers.list;
@@ -94,6 +126,7 @@ void PlayerMatchStatsDiffer::diff(const GameState &prev, const GameState &curr, 
             if (pms.deaths != cms.deaths) emit e->allPlayersDeathsChanged(sid, pms.deaths, cms.deaths);
             if (pms.assists != cms.assists) emit e->allPlayersAssistsChanged(sid, pms.assists, cms.assists);
             if (pms.score != cms.score)   emit e->allPlayersScoreChanged(sid, pms.score, cms.score);
+            if (pms.mvps != cms.mvps)     emit e->allPlayersMvpsChanged(sid, pms.mvps, cms.mvps);
         }
     }
 }
@@ -111,6 +144,8 @@ void WeaponDiffer::diff(const GameState &prev, const GameState &curr, GsiService
         Weapon emptyWeapon;
         emit e->playerWeaponChanged(prevActive ? *prevActive : emptyWeapon,
                                      currActive ? *currActive : emptyWeapon);
+        emit e->playerActiveWeaponChanged(prevActive ? *prevActive : emptyWeapon,
+                                           currActive ? *currActive : emptyWeapon);
     }
 
     // 弹药变化
@@ -120,6 +155,23 @@ void WeaponDiffer::diff(const GameState &prev, const GameState &curr, GsiService
         if (prevActive->ammoReserve != currActive->ammoReserve)
             emit e->playerAmmoReserveChanged(prevActive->ammoReserve, currActive->ammoReserve);
     }
+
+    // 武器列表增减检测
+    QList<Weapon> pickedUp, dropped;
+    for (const auto &w : curr.player.weapons.list) {
+        bool found = false;
+        for (const auto &pw : prev.player.weapons.list)
+            if (pw.name == w.name) { found = true; break; }
+        if (!found) pickedUp.append(w);
+    }
+    for (const auto &w : prev.player.weapons.list) {
+        bool found = false;
+        for (const auto &cw : curr.player.weapons.list)
+            if (cw.name == w.name) { found = true; break; }
+        if (!found) dropped.append(w);
+    }
+    if (!pickedUp.isEmpty()) emit e->playerWeaponsPickedUp(pickedUp);
+    if (!dropped.isEmpty()) emit e->playerWeaponsDropped(dropped);
 
     // 武器列表整体变化
     if (prev.player.weapons != curr.player.weapons) {

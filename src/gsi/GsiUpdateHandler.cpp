@@ -40,6 +40,11 @@ void GsiUpdateHandler::handle(const QJsonObject &rawUpdate) {
 
         // 5. 更新最后状态
         m_lastState = newState;
+
+        // 6. 通知包装层（如 LocalPlayerService）状态已更新
+        if (m_emitter) {
+            emit m_emitter->stateUpdated();
+        }
     } catch (...) {
         qWarning() << "GsiUpdateHandler: Error processing GSI update.";
     }

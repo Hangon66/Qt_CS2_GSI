@@ -15,6 +15,8 @@ PlayerState::PlayerState(const QJsonObject &obj)
     , roundKills(obj.value("round_kills").toInt())
     , roundHeadshotKills(obj.value("round_killhs").toInt())
     , equipmentValue(obj.value("equip_value").toInt())
+    , defusekit(obj.value("defusekit").toBool())
+    , roundTotalDamage(obj.value("round_totaldmg").toInt())
 {}
 
 QJsonObject PlayerState::toJsonObject() const {
@@ -23,6 +25,7 @@ QJsonObject PlayerState::toJsonObject() const {
     o["flashed"] = flashed; o["smoked"] = smoked; o["burning"] = burning;
     o["money"] = money; o["round_kills"] = roundKills;
     o["round_killhs"] = roundHeadshotKills; o["equip_value"] = equipmentValue;
+    o["defusekit"] = defusekit; o["round_totaldmg"] = roundTotalDamage;
     return o;
 }
 
@@ -30,7 +33,8 @@ bool PlayerState::operator==(const PlayerState &o) const {
     return health == o.health && armor == o.armor && helmet == o.helmet &&
            flashed == o.flashed && smoked == o.smoked && burning == o.burning &&
            money == o.money && roundKills == o.roundKills &&
-           roundHeadshotKills == o.roundHeadshotKills && equipmentValue == o.equipmentValue;
+           roundHeadshotKills == o.roundHeadshotKills && equipmentValue == o.equipmentValue &&
+           defusekit == o.defusekit && roundTotalDamage == o.roundTotalDamage;
 }
 
 // --- PlayerMatchStats ---

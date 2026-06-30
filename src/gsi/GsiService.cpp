@@ -1,4 +1,5 @@
 #include "GsiService.h"
+#include "LocalPlayerService.h"
 #include "network/GsiListener.h"
 #include "network/GsiServer.h"
 #include "network/GsiConfigWriter.h"
@@ -27,6 +28,7 @@ GsiService::GsiService(QObject *parent)
     , m_wsServer(nullptr)
 {
     // 注册所有默认 Differ
+    s_differManager.registerDiffer(std::make_unique<AuthDiffer>());
     s_differManager.registerDiffer(std::make_unique<ProviderDiffer>());
     s_differManager.registerDiffer(std::make_unique<MapDiffer>());
     s_differManager.registerDiffer(std::make_unique<RoundWinsDiffer>());
@@ -40,6 +42,9 @@ GsiService::GsiService(QObject *parent)
     s_differManager.registerDiffer(std::make_unique<GrenadesDiffer>());
 
     qDebug() << "GsiService: Initialized with all default differs.";
+
+    // 创建本地玩家服务（内部自动连接 stateUpdated 信号）
+    m_localPlayer = new LocalPlayerService(this, this);
 }
 
 GsiService::~GsiService() {
@@ -101,8 +106,20 @@ bool GsiService::isRunning() const {
     return m_running;
 }
 
+LocalPlayerService *GsiService::localPlayer() const {
+    return m_localPlayer;
+}
+
 const GameState &GsiService::lastState() const {
     return m_updateHandler->lastState();
+}
+
+QString GsiService::localSteamid() const {
+    return m_updateHandler->lastState().provider.steamid;
+}
+
+bool GsiService::isLocal(const QString &steamid) const {
+    return !steamid.isEmpty() && steamid == localSteamid();
 }
 
 // ---------------------------------------------------------------------------

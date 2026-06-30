@@ -60,6 +60,17 @@ void EventLogWidget::connectToService(GSI::GsiService *service) {
     connect(service, &GSI::GsiService::mapTeamTScoreChanged, this, [this](int prev, int curr) {
         appendLog(QStringLiteral("T 比分: %1 → %2").arg(prev).arg(curr));
     });
+
+    // 倒计时
+    connect(service, &GSI::GsiService::phaseCountdownsPhaseChanged, this,
+            [this](GSI::CountdownPhase, GSI::CountdownPhase curr) {
+        appendLog(QStringLiteral("倒计时阶段: → %1").arg(GSI::countdownPhaseToString(curr)));
+    });
+
+    connect(service, &GSI::GsiService::phaseCountdownsTimeChanged, this,
+            [this](const QString &, const QString &curr) {
+        appendLog(QStringLiteral("倒计时时间: %1").arg(curr));
+    });
 }
 
 void EventLogWidget::onClearClicked() {

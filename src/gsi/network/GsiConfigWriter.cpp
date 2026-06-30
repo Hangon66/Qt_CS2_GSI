@@ -32,6 +32,7 @@ QString GsiConfigWriter::generate(const QString &name, const QString &uri) {
         "    \"allplayers_position\"       \"1\"\n"
         "    \"allgrenades\"               \"1\"\n"
         "    \"bomb\"                      \"1\"\n"
+        "    \"auth\"                      \"1\"\n"
         "  }\n"
         "}"
     ).arg(name, uri);

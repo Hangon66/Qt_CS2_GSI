@@ -35,6 +35,14 @@ public:
     void diff(const GameState &prev, const GameState &curr, GsiService *emitter) override;
 };
 
+/**
+ * @brief Auth 认证信息差异检测。
+ */
+class AuthDiffer : public DifferBase {
+public:
+    void diff(const GameState &prev, const GameState &curr, GsiService *emitter) override;
+};
+
 } // namespace GSI
 
 #endif // MAPDIFFERS_H
